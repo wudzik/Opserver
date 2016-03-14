@@ -231,6 +231,8 @@
     <Content Include="compilerconfig.json.defaults">
       <DependentUpon>compilerconfig.json</DependentUpon>
     </Content>
+    <Content Include="Config\DashboardSettings.json" />
+    <Content Include="Config\ElasticSettings.json" />
     <None Include="Config\PagerDutySettings.json.example" />
     <Content Include="Content\bootstrap\fonts\glyphicons-halflings-regular.eot" />
     <Content Include="Content\bootstrap\fonts\glyphicons-halflings-regular.ttf" />
@@ -386,6 +388,8 @@
     <Compile Include="Controllers\PagerDutyController.Admin.cs">
       <DependentUpon>PagerDutyController.cs</DependentUpon>
     </Compile>
+    <Content Include="Config\SecuritySettings.config" />
+    <Content Include="Config\SQLSettings.json" />
     <None Include="Help\SQL\WaitStats.md" />
     <Content Include="Views\CloudFlare\Railguns.cshtml" />
     <Content Include="Views\CloudFlare\Dashboard.cshtml" />
