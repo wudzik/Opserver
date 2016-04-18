@@ -74,7 +74,7 @@ namespace StackExchange.Opserver.Data.Dashboard.Providers
                 Manufacturer,
                 Model
                 from Win32_ComputerSystem";
-                using (var q = Wmi.Query(Name, machineQuery))
+                using (var q = Wmi.Query(Endpoint, machineQuery))
                 {
                     var data = await q.GetFirstResultAsync().ConfigureAwait(false);
                     if (data == null)
@@ -96,7 +96,7 @@ namespace StackExchange.Opserver.Data.Dashboard.Providers
                 Version
                 from Win32_OperatingSystem";
 
-                using (var q = Wmi.Query(Name, query))
+                using (var q = Wmi.Query(Endpoint, query))
                 {
                     var data = await q.GetFirstResultAsync().ConfigureAwait(false);
                     if (data == null)
@@ -114,26 +114,19 @@ namespace StackExchange.Opserver.Data.Dashboard.Providers
 
             private async Task GetAllInterfacesAsync()
             {
-                //if (KernelVersion > WindowsKernelVersions.Windows2012And8)
-                //{
-                //    //ActiveMaximumTransmissionUnit
-                //    //MtuSize
-                //    //
-                //    //Speed
-                //}
-
                 const string query = @"
 SELECT Name,
        DeviceID,
        NetConnectionID,
        Description,
        MACAddress,
-       Speed
+       Speed,
+       InterfaceIndex
   FROM Win32_NetworkAdapter
  WHERE NetConnectionStatus = 2"; //connected adapters.
                 //'AND PhysicalAdapter = True' causes exceptions with old windows versions.
-
-                using (var q = Wmi.Query(Name, query))
+                var indexMap = new Dictionary<uint, Interface>();
+                using (var q = Wmi.Query(Endpoint, query))
                 {
                     foreach (var data in await q.GetDynamicResultAsync().ConfigureAwait(false))
                     {
@@ -144,6 +137,7 @@ SELECT Name,
                             i = new Interface();
                             Interfaces.Add(i);
                         }
+                        indexMap[data.InterfaceIndex] = i;
 
                         i.Id = $"{data.DeviceID}";
                         i.Alias = "!alias";
@@ -156,8 +150,39 @@ SELECT Name,
                         i.Speed = data.Speed;
                         i.Status = NodeStatus.Active;
                         i.TypeDescription = "";
-                        // TODO: Implement on less-frequent queries => bulk and getter override?
                         i.IPs = new List<IPNet>();
+                    }
+                }
+
+                const string ipQuery = @"
+Select InterfaceIndex, IPAddress, IPSubnet, DHCPEnabled
+  From WIn32_NetworkAdapterConfiguration 
+ Where IPEnabled = 'True'";
+
+                using (var q = Wmi.Query(Endpoint, ipQuery))
+                {
+                    foreach (var data in await q.GetDynamicResultAsync().ConfigureAwait(false))
+                    {
+                        Interface i;
+                        if (indexMap.TryGetValue(data.InterfaceIndex, out i))
+                        {
+                            i.DHCPEnabled = data.DHCPEnabled;
+                            string[] ips = data.IPAddress as string[],
+                                     subnets = data.IPSubnet as string[];
+                            for (var j = 0; j < (ips?.Length).GetValueOrDefault(0); j++)
+                            {
+                                IPNet net;
+                                int cidr;
+                                if (int.TryParse(subnets[j], out cidr) && IPNet.TryParse(ips[j], cidr, out net))
+                                {
+                                    i.IPs.Add(net);
+                                }
+                                else if (IPNet.TryParse(ips[j], subnets[j], out net))
+                                {
+                                    i.IPs.Add(net);
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -175,7 +200,7 @@ SELECT Caption,
   FROM Win32_LogicalDisk
  WHERE DriveType = 3"; //fixed disks
 
-                using (var q = Wmi.Query(Name, query))
+                using (var q = Wmi.Query(Endpoint, query))
                 {
                     foreach (var disk in await q.GetDynamicResultAsync().ConfigureAwait(false))
                     {
@@ -212,7 +237,7 @@ SELECT PercentProcessorTime
   FROM Win32_PerfFormattedData_PerfOS_Processor
  WHERE Name = '_Total'";
 
-                using (var q = Wmi.Query(Name, query))
+                using (var q = Wmi.Query(Endpoint, query))
                 {
                     var data = await q.GetFirstResultAsync().ConfigureAwait(false);
                     if (data == null)
@@ -234,7 +259,7 @@ SELECT PercentProcessorTime
 SELECT AvailableKBytes 
   FROM Win32_PerfFormattedData_PerfOS_Memory";
                 
-                using (var q = Wmi.Query(Name, query))
+                using (var q = Wmi.Query(Endpoint, query))
                 {
                     var data = await q.GetFirstResultAsync().ConfigureAwait(false);
                     if (data == null)
@@ -284,7 +309,7 @@ SELECT Name,
                     OutAvgBps = 0
                 };
 
-                using (var q = Wmi.Query(Name, query))
+                using (var q = Wmi.Query(Endpoint, query))
                 {
                     foreach (var data in await q.GetDynamicResultAsync().ConfigureAwait(false))
                     {

@@ -19,7 +19,7 @@ namespace StackExchange.Opserver.Controllers
         {
             var vd = new DashboardModel
                 {
-                    Nodes = DashboardData.AllNodes.Where(n => !Current.Settings.Dashboard.ExcludePatternRegex.IsMatch(n.Name)).ToList(),
+                    Nodes = DashboardData.AllNodes.ToList(),
                     ErrorMessages = DashboardData.ProviderExceptions.ToList(),
                     Filter = filter,
                     IsStartingUp = DashboardData.AnyDoingFirstPoll
@@ -54,11 +54,11 @@ namespace StackExchange.Opserver.Controllers
             }
         }
 
-        [Route("dashboard/graph/{node}/{type}")]
-        [Route("dashboard/graph/{node}/{type}/{subId?}")]
-        public async Task<ActionResult> NodeGraph(string node, string type, string subId)
+        [Route("dashboard/graph/{nodeId}/{type}")]
+        [Route("dashboard/graph/{nodeId}/{type}/{subId?}")]
+        public async Task<ActionResult> NodeGraph(string nodeId, string type, string subId)
         {
-            var n = DashboardData.GetNodeByName(node);
+            var n = DashboardData.GetNodeById(nodeId);
             var vd = new NodeGraphModel
             {
                 Node = n,

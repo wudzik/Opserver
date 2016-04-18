@@ -221,6 +221,9 @@ namespace StackExchange.Opserver.Controllers
                 case "backups":
                     vd.View = DatabasesModel.Views.Backups;
                     return View("Databases.Modal.Backups", vd);
+                case "restores":
+                    vd.View = DatabasesModel.Views.Restores;
+                    return View("Databases.Modal.Restores", vd);
                 case "storage":
                     vd.View = DatabasesModel.Views.Storage;
                     return View("Databases.Modal.Storage", vd);
@@ -230,6 +233,9 @@ namespace StackExchange.Opserver.Controllers
                 case "views":
                     vd.View = DatabasesModel.Views.Views;
                     return View("Databases.Modal.Views", vd);
+                case "missingindexes":
+                    vd.View = DatabasesModel.Views.MissingIndexes;
+                    return View("Databases.Modal.MissingIndexes", vd);
             }
             return View("Databases.Modal.Tables", vd);
         }

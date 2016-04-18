@@ -122,7 +122,7 @@ if (counter == null)
                                 var dbs = i.Databases.Data;
                                 var dbStatus = dbs.GetWorstStatus();
                                 <div class="value-block col-md-3 col-sm-6 @dbStatus.BackgroundClass()">
-                                    @SQLHelpers.HealthDescription(i, dbs)
+                                    @Helpers.HealthDescription(dbs)
                                     <label>
                                         @dbs.Count.Pluralize("Database", includeNumber: false)
                                     </label>
@@ -134,7 +134,7 @@ if (counter == null)
                                 var running = jobs.Count(j => j.IsRunning);
                                 var jobStatus = jobs.GetWorstStatus();
                                 <div class="value-block col-md-3 col-sm-6 @jobStatus.BackgroundClass()">
-                                    @SQLHelpers.HealthDescription(i, jobs, unknownIsHealthy: true)
+                                    @Helpers.HealthDescription(jobs, unknownIsHealthy: true)
                                     <label>
                                         @jobs.Count.Pluralize("Job", includeNumber: false)
                                         @if (running > 0)
@@ -159,7 +159,7 @@ if (counter == null)
                         <div class="panel-body small">
                             <div class="value-block col-md-3">
                                 <div class="progress">
-                                    <div class="progress-bar" style="width: @i.CurrentCPUPercent.ToString()%;"></div>
+                                    <div class="progress-bar" style="width: @(i.CurrentCPUPercent?.ToString(CultureInfo.InvariantCulture))%;"></div>
                                     <span>@i.CurrentCPUPercent.ToString()%</span>
                                 </div>
                                 <label>CPU</label>
@@ -190,7 +190,7 @@ Top Users:
     <text>  @mc.Name: @mc.UsedBytes.ToSize() (@(mc.UsedPercent.ToString("#0.##"))%)</text>
 }">
                                 <div class="progress">
-                                    <div class="progress-bar" style="width: @(i.CurrentMemoryPercent.ToString())%;"></div>
+                                    <div class="progress-bar" style="width: @(i.CurrentMemoryPercent?.ToString(CultureInfo.InvariantCulture))%;"></div>
                                     <span>
                                         @decimal.Round(i.CurrentMemoryPercent.Value, 2).ToString(CultureInfo.InvariantCulture)%
                                         <span class="smaller">(@pd.CommittedBytes.ToSize() / @pd.PhysicalMemoryBytes.ToSize())</span>
@@ -266,7 +266,7 @@ Free: @v.AvailableBytes.ToComma() bytes (@v.AvailableBytes.ToSize())
 Avgerage Read Stall: @v.AvgReadStallMS.ToString(CultureInfo.CurrentCulture) ms
 Avgerage Write Stall: @v.AvgWriteStallMS.ToString(CultureInfo.CurrentCulture) ms">
                                         <div class="progress">
-                                            <div class="progress-bar" style="width: @percentUsed.ToString(CultureInfo.CurrentCulture)%;"></div>
+                                            <div class="progress-bar" style="width: @percentUsed.ToString(CultureInfo.InvariantCulture)%;"></div>
                                             <span>@((v.TotalBytes - v.AvailableBytes).ToSize()) / @v.TotalBytes.ToSize() <span class="smaller">(@v.AvailableBytes.ToSize() free)</span></span>
                                         </div>
                                         <label>@v.VolumeMountPoint.ToUpper() @v.LogicalVolumeName</label>
